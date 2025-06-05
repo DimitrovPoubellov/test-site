@@ -310,6 +310,7 @@
               notificationText = D.querySelector('#notification-badge .notification-text');
 
         // URL du webhook Make.com pour envoyer les données
+        // ASSUREZ-VOUS QUE CETTE URL EST EXACTEMENT CELLE DE VOTRE WEBHOOK DANS MAKE.COM
         const MAKE_WEBHOOK_URL = 'https://hook.eu2.make.com/4j9ak0usjvjbo7ekocdi5pz8huwf82hq';
 
         let isChatOpen = false;
@@ -528,9 +529,12 @@
                 userId: getUserId(),
                 Statut: statutValue,
                 Comptable: comptableValue,
-                Nom: '', // Ces champs ne sont pas récupérables côté client depuis Calendly
-                Mail: ''  // Ces champs ne sont pas récupérables côté client depuis Calendly
+                // Nom et Mail ne peuvent pas être récupérés côté client depuis Calendly
+                Nom: '',
+                Mail: ''
             };
+
+            console.log('Tentative d\'envoi des données à Make.com:', dataToSubmit); // Log des données envoyées
 
             try {
                 const response = await fetch(MAKE_WEBHOOK_URL, {
@@ -538,8 +542,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dataToSubmit)
                 });
+
                 if (!response.ok) {
-                    console.error('Erreur lors de l\'envoi des données à Make.com:', response.status, await response.text());
+                    const errorText = await response.text();
+                    console.error('Erreur lors de l\'envoi des données à Make.com:', response.status, errorText);
                 } else {
                     console.log('Données envoyées à Make.com avec succès:', dataToSubmit);
                 }
@@ -695,7 +701,7 @@
                             conversationState = 'creation_societe_structure_choix';
                         } else if (option.id === 'non-form-juridique') {
                             // Si l'utilisateur ne sait pas, on envoie la prise de RDV sans forme juridique spécifique.
-                            selectedLegalForm = 'Création - Non définie';
+                            selectedLegalForm = 'Création - Forme non définie';
                             selectedComptableStatus = 'N/A'; // Pas de question de comptable ici
                             appendMessage("D'accord, c'est pas grave, nos conseiller vous aiguilleront. Voici le calendrier pour la prise de rendez-vous.", 'bot');
                             await sendDataToMake();
